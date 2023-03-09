@@ -12,7 +12,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
-<DialogPane xmlns:fx="http://javafx.com/fxml/1" prefWidth="476.0" xmlns="http://javafx.com/javafx/8.0.171"
+<DialogPane xmlns:fx="http://javafx.com/fxml/1" prefWidth="1000.0" prefHeight="600" xmlns="http://javafx.com/javafx/8.0.171"
             fx:controller="org.jabref.gui.EntryTypeView">
     <buttonTypes>
         <ButtonType fx:constant="CANCEL"/>
@@ -21,14 +21,21 @@
     <content>
         <VBox prefHeight="200.0" prefWidth="400.0">
             <children>
-                <TitledPane fx:id="recommendedEntriesTitlePane" animated="false" collapsible="false" text="%Recommended">
+                <TitledPane fx:id="enterByTypeEntriesTitlePane" animated="false" collapsible="false" text="%New entry based on type">
                     <content>
-                        <FlowPane fx:id="recommendedEntriesPane" prefHeight="50.0" prefWidth="200.0"/>
+                        <FlowPane fx:id="enterByTypeEntriesPane" prefHeight="50.0" prefWidth="200.0"/>
                     </content>
                 </TitledPane>
-                <TitledPane fx:id="otherEntriesTitlePane" animated="false" collapsible="true" expanded="false" text="%Others">
+                <TitledPane fx:id="enterByIdEntriesTitlePane" animated="false" collapsible="false" text="%Others">
                     <content>
-                        <FlowPane fx:id="otherEntriesPane" prefHeight="100.0" prefWidth="200.0"/>
+                        <FlowPane fx:id="enterByIdEntriesPane" prefHeight="100.0" prefWidth="200.0">
+                            <Label text="%ID type"/>
+                            <ComboBox fx:id="idBasedFetchers" onAction="#focusTextField" prefHeight="30.0" prefWidth="300.0"
+                                      GridPane.columnIndex="1"/>
+                            <Label text="%ID" GridPane.rowIndex="1"/>
+                            <TextField fx:id="idTextField" onAction="#runFetcherWorker" prefHeight="30.0" prefWidth="300.0"
+                                       GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                        </FlowPane>
                     </content>
                 </TitledPane>
                 <TitledPane fx:id="customTitlePane" animated="false" collapsible="false" text="%Custom">
@@ -37,14 +44,6 @@
                     </content>
                 </TitledPane>
                 <GridPane alignment="CENTER">
-                    <children>
-                        <Label text="%ID type"/>
-                        <ComboBox fx:id="idBasedFetchers" onAction="#focusTextField" prefHeight="30.0" prefWidth="300.0"
-                                  GridPane.columnIndex="1"/>
-                        <Label text="%ID" GridPane.rowIndex="1"/>
-                        <TextField fx:id="idTextField" onAction="#runFetcherWorker" prefHeight="30.0" prefWidth="300.0"
-                                   GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-                    </children>
                     <columnConstraints>
                         <ColumnConstraints hgrow="SOMETIMES" maxWidth="122.0" minWidth="10.0" prefWidth="100.0"/>
                         <ColumnConstraints hgrow="SOMETIMES" maxWidth="146.0" minWidth="10.0" prefWidth="300.0"/>

@@ -53,11 +53,11 @@ public class EntryTypeView extends BaseDialog<EntryType> {
     @FXML private ButtonType generateButton;
     @FXML private TextField idTextField;
     @FXML private ComboBox<IdBasedFetcher> idBasedFetchers;
-    @FXML private FlowPane recommendedEntriesPane;
-    @FXML private FlowPane otherEntriesPane;
+    @FXML private FlowPane enterByTypeEntriesPane;
+    @FXML private FlowPane enterByIdEntriesPane;
     @FXML private FlowPane customPane;
-    @FXML private TitledPane recommendedEntriesTitlePane;
-    @FXML private TitledPane otherEntriesTitlePane;
+    @FXML private TitledPane enterByTypeEntriesTitlePane;
+    @FXML private TitledPane enterByIdEntriesTitlePane;
     @FXML private TitledPane customTitlePane;
 
     private final LibraryTab libraryTab;
@@ -73,7 +73,7 @@ public class EntryTypeView extends BaseDialog<EntryType> {
         this.dialogService = dialogService;
         this.preferencesService = preferences;
 
-        this.setTitle(Localization.lang("Select entry type"));
+        this.setTitle(Localization.lang("New Entry"));
         ViewLoader.view(this)
                   .load()
                   .setAsDialogPane(this);
@@ -137,15 +137,15 @@ public class EntryTypeView extends BaseDialog<EntryType> {
 
         // we set the managed property so that they will only be rendered when they are visble so that the Nodes only take the space when visible
         // avoids removing and adding from the scence graph
-        recommendedEntriesTitlePane.managedProperty().bind(recommendedEntriesTitlePane.visibleProperty());
-        otherEntriesTitlePane.managedProperty().bind(otherEntriesTitlePane.visibleProperty());
+        enterByTypeEntriesTitlePane.managedProperty().bind(enterByTypeEntriesTitlePane.visibleProperty());
+        enterByIdEntriesTitlePane.managedProperty().bind(enterByIdEntriesTitlePane.visibleProperty());
         customTitlePane.managedProperty().bind(customTitlePane.visibleProperty());
 
-        otherEntriesTitlePane.expandedProperty().addListener((obs, wasExpanded, isNowExpanded) -> {
+        enterByIdEntriesTitlePane.expandedProperty().addListener((obs, wasExpanded, isNowExpanded) -> {
             if (isNowExpanded) {
-                this.setHeight(this.getHeight() + otherEntriesPane.getHeight());
+                this.setHeight(this.getHeight() + enterByIdEntriesPane.getHeight());
             } else {
-                this.setHeight(this.getHeight() - otherEntriesPane.getHeight());
+                this.setHeight(this.getHeight() - enterByIdEntriesPane.getHeight());
             }
         });
 
@@ -168,8 +168,8 @@ public class EntryTypeView extends BaseDialog<EntryType> {
                 .collect(Collectors.toList());
             otherEntries.addAll(IEEETranEntryTypeDefinitions.ALL);
         }
-        addEntriesToPane(recommendedEntriesPane, recommendedEntries);
-        addEntriesToPane(otherEntriesPane, otherEntries);
+        addEntriesToPane(enterByTypeEntriesPane, recommendedEntries);
+        addEntriesToPane(enterByTypeEntriesPane, otherEntries);
 
         BibDatabaseMode customTypeDatabaseMode = isBiblatexMode ? BibDatabaseMode.BIBLATEX : BibDatabaseMode.BIBTEX;
         List<BibEntryType> customTypes = Globals.entryTypesManager.getAllCustomTypes(customTypeDatabaseMode);
