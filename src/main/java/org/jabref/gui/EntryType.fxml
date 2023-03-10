@@ -26,7 +26,7 @@
                         <FlowPane fx:id="enterByTypeEntriesPane" prefHeight="50.0" prefWidth="200.0"/>
                     </content>
                 </TitledPane>
-                <TitledPane fx:id="enterByIdEntriesTitlePane" animated="false" collapsible="false" text="%Others">
+                <TitledPane fx:id="enterByIdEntriesTitlePane" animated="false" collapsible="false" text="%New entry based on ID">
                     <content>
                         <FlowPane fx:id="enterByIdEntriesPane" prefHeight="100.0" prefWidth="200.0">
                             <Label text="%ID type"/>
