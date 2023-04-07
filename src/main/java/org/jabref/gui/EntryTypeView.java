@@ -1,9 +1,12 @@
 package org.jabref.gui;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import javax.swing.undo.UndoManager;
 
 import javafx.application.Platform;
 import javafx.event.Event;
@@ -12,20 +15,26 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.FlowPane;
 import javafx.stage.Screen;
 
+import org.jabref.gui.bibtexextractor.BibtexExtractorViewModel;
+import org.jabref.gui.externalfiles.ImportHandler;
 import org.jabref.gui.util.BaseDialog;
 import org.jabref.gui.util.ControlHelper;
 import org.jabref.gui.util.IconValidationDecorator;
+import org.jabref.gui.util.TaskExecutor;
 import org.jabref.gui.util.ViewModelListCellFactory;
 import org.jabref.logic.importer.IdBasedFetcher;
 import org.jabref.logic.importer.ImportFormatReader;
 import org.jabref.logic.importer.WebFetcher;
 import org.jabref.logic.l10n.Localization;
+import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.database.BibDatabaseMode;
+import org.jabref.model.entry.BibEntry;
 import org.jabref.model.entry.BibEntryType;
 import org.jabref.model.entry.types.BiblatexAPAEntryTypeDefinitions;
 import org.jabref.model.entry.types.BiblatexEntryTypeDefinitions;
@@ -35,9 +44,11 @@ import org.jabref.model.entry.types.EntryType;
 import org.jabref.model.entry.types.IEEETranEntryTypeDefinitions;
 import org.jabref.model.entry.types.StandardEntryType;
 import org.jabref.model.strings.StringUtil;
+import org.jabref.model.util.FileUpdateMonitor;
 import org.jabref.preferences.PreferencesService;
 
 import com.airhacks.afterburner.views.ViewLoader;
+import com.jfoenix.controls.JFXChipView;
 import com.tobiasdiez.easybind.EasyBind;
 import de.saxsys.mvvmfx.utils.validation.visualization.ControlsFxVisualizer;
 import jakarta.inject.Inject;
@@ -49,9 +60,16 @@ public class EntryTypeView extends BaseDialog<EntryType> {
 
     @Inject StateManager stateManager;
     @Inject ImportFormatReader importFormatReader;
+    @Inject private FileUpdateMonitor fileUpdateMonitor;
+    @Inject private TaskExecutor taskExecutor;
+    @Inject private UndoManager undoManager;
 
     @FXML private ButtonType generateButton;
+    @FXML private Button plainTextparseButton;
+    @FXML private Button bibTeXParseButton;
     @FXML private TextField idTextField;
+    @FXML private TextArea input;
+    @FXML private TextArea bibTeXinput;
     @FXML private ComboBox<IdBasedFetcher> idBasedFetchers;
     @FXML private FlowPane enterByTypeEntriesPane;
     @FXML private FlowPane enterByIdEntriesPane;
@@ -60,6 +78,8 @@ public class EntryTypeView extends BaseDialog<EntryType> {
     @FXML private TitledPane enterByIdEntriesTitlePane;
     @FXML private TitledPane customTitlePane;
 
+    private BibtexExtractorViewModel bibtexExtractorViewModelviewModel;
+    private ImportHandler importHandler;
     private final LibraryTab libraryTab;
     private final DialogService dialogService;
     private final PreferencesService preferencesService;
@@ -122,6 +142,12 @@ public class EntryTypeView extends BaseDialog<EntryType> {
         visualizer.setDecoration(new IconValidationDecorator());
         viewModel = new EntryTypeViewModel(preferencesService, libraryTab, dialogService, stateManager, importFormatReader);
 
+        BibDatabaseContext database = stateManager.getActiveDatabase().orElseThrow(() -> new NullPointerException("Database null"));
+        this.bibtexExtractorViewModelviewModel = new BibtexExtractorViewModel(database, dialogService, preferencesService, fileUpdateMonitor, taskExecutor, undoManager, stateManager, importFormatReader);
+        input.textProperty().bindBidirectional(bibtexExtractorViewModelviewModel.inputTextProperty());
+
+        this.importHandler = new ImportHandler(database,preferencesService,fileUpdateMonitor,undoManager,stateManager,dialogService,importFormatReader);
+
         idBasedFetchers.itemsProperty().bind(viewModel.fetcherItemsProperty());
         idTextField.textProperty().bindBidirectional(viewModel.idTextProperty());
         idBasedFetchers.valueProperty().bindBidirectional(viewModel.selectedItemProperty());
@@ -183,6 +209,43 @@ public class EntryTypeView extends BaseDialog<EntryType> {
                 visualizer.initVisualization(viewModel.idFieldValidationStatus(), idTextField, true));
 
         Platform.runLater(() -> idTextField.requestFocus());
+
+        //third tab(create entries form plain text)
+        input.setPromptText(Localization.lang("Please enter the plain references to extract from separated by double empty lines."));
+        input.selectAll();
+
+        plainTextparseButton.setTooltip(new Tooltip((Localization.lang("Starts the extraction and adds the resulting entries to the currently opened database"))));
+        plainTextparseButton.setOnAction((event) -> {
+            bibtexExtractorViewModelviewModel.startParsing();
+            this.close();
+        });
+        plainTextparseButton.disableProperty().bind(bibtexExtractorViewModelviewModel.inputTextProperty().isEmpty());
+
+        //fourth tab(create entries from BibTeX Code)
+        bibTeXParseButton.setDisable(true);
+        bibTeXinput.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue.trim().isEmpty()) {
+                bibTeXParseButton.setDisable(true);
+            } else {
+                bibTeXParseButton.setDisable(false);
+            }
+        });
+
+        bibTeXinput.setPromptText(Localization.lang("Please enter the BibTeX code to extract from."));
+        bibTeXParseButton.setTooltip(new Tooltip((Localization.lang("Starts the extraction and adds the resulting entries to the currently opened database"))));
+        bibTeXParseButton.setOnAction((event) -> createNewEntriesFromBibTeX());
+
+    }
+
+    private void createNewEntriesFromBibTeX(){
+        BibDatabaseContext database = stateManager.getActiveDatabase().orElseThrow(() -> new NullPointerException("Database null"));
+        String bibtexString = bibTeXinput.getText();
+        List<BibEntry> newEntries = importHandler.handleBibTeXData(bibtexString);
+
+        for(BibEntry entry : newEntries){
+            database.getDatabase().insertEntry(entry);
+        }
+        close();
     }
 
     public EntryType getChoice() {

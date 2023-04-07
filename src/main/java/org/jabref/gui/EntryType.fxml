@@ -12,6 +12,9 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ScrollPane?>
 <DialogPane xmlns:fx="http://javafx.com/fxml/1" prefWidth="1000.0" prefHeight="600" xmlns="http://javafx.com/javafx/8.0.171"
             fx:controller="org.jabref.gui.EntryTypeView">
     <buttonTypes>
@@ -19,44 +22,76 @@
         <ButtonType fx:id="generateButton" buttonData="OK_DONE" text="%Generate"/>
     </buttonTypes>
     <content>
-        <VBox prefHeight="200.0" prefWidth="400.0">
-            <children>
-                <TitledPane fx:id="enterByTypeEntriesTitlePane" animated="false" collapsible="false" text="%New entry based on type">
-                    <content>
-                        <FlowPane fx:id="enterByTypeEntriesPane" prefHeight="50.0" prefWidth="200.0"/>
-                    </content>
-                </TitledPane>
-                <TitledPane fx:id="enterByIdEntriesTitlePane" animated="false" collapsible="false" text="%New entry based on ID">
-                    <content>
-                        <FlowPane fx:id="enterByIdEntriesPane" prefHeight="100.0" prefWidth="200.0">
-                            <Label text="%ID type"/>
-                            <ComboBox fx:id="idBasedFetchers" onAction="#focusTextField" prefHeight="30.0" prefWidth="300.0"
-                                      GridPane.columnIndex="1"/>
-                            <Label text="%ID" GridPane.rowIndex="1"/>
-                            <TextField fx:id="idTextField" onAction="#runFetcherWorker" prefHeight="30.0" prefWidth="300.0"
-                                       GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-                        </FlowPane>
-                    </content>
-                </TitledPane>
-                <TitledPane fx:id="customTitlePane" animated="false" collapsible="false" text="%Custom">
-                    <content>
-                        <FlowPane fx:id="customPane" prefHeight="200.0" prefWidth="200.0"/>
-                    </content>
-                </TitledPane>
-                <GridPane alignment="CENTER">
-                    <columnConstraints>
-                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="122.0" minWidth="10.0" prefWidth="100.0"/>
-                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="146.0" minWidth="10.0" prefWidth="300.0"/>
-                    </columnConstraints>
-                    <opaqueInsets>
-                        <Insets bottom="4.0" left="4.0" right="4.0" top="4.0"/>
-                    </opaqueInsets>
-                    <rowConstraints>
-                        <RowConstraints minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-                        <RowConstraints minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-                    </rowConstraints>
-                </GridPane>
-            </children>
-        </VBox>
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER">
+            <VBox prefHeight="200.0" prefWidth="300.0">
+                <children>
+                    <TitledPane fx:id="enterByTypeEntriesTitlePane" animated="false" collapsible="false" text="%New entry based on type">
+                        <content>
+                            <FlowPane fx:id="enterByTypeEntriesPane" prefHeight="50.0" prefWidth="200.0"/>
+                        </content>
+                    </TitledPane>
+
+                    <TitledPane fx:id="customTitlePane" animated="false" collapsible="false" text="%Custom">
+                        <content>
+                            <FlowPane fx:id="customPane" prefHeight="200.0" prefWidth="200.0"/>
+                        </content>
+                    </TitledPane>
+
+                    <TitledPane fx:id="enterByIdEntriesTitlePane" animated="false" collapsible="false" text="%New entry based on ID">
+                        <content>
+                            <FlowPane fx:id="enterByIdEntriesPane" prefHeight="100.0" prefWidth="200.0">
+                                <GridPane alignment="CENTER">
+                                    <Label text="%ID type"/>
+                                    <ComboBox fx:id="idBasedFetchers" onAction="#focusTextField" prefHeight="30.0" prefWidth="300.0"
+                                              GridPane.columnIndex="1"/>
+                                    <Label text="%ID" GridPane.rowIndex="1"/>
+                                    <TextField fx:id="idTextField" onAction="#runFetcherWorker" prefHeight="30.0" prefWidth="300.0"
+                                               GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                                    <columnConstraints>
+                                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="122.0" minWidth="10.0" prefWidth="100.0"/>
+                                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="146.0" minWidth="10.0" prefWidth="300.0"/>
+                                    </columnConstraints>
+                                    <opaqueInsets>
+                                        <Insets bottom="4.0" left="4.0" right="4.0" top="4.0"/>
+                                    </opaqueInsets>
+                                    <rowConstraints>
+                                        <RowConstraints minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                                        <RowConstraints minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                                    </rowConstraints>
+                                </GridPane>
+                            </FlowPane>
+                        </content>
+                    </TitledPane>
+
+                    <TitledPane fx:id="enterByTextEntriesTitlePane" animated="false" collapsible="false" text="%New entry from plain text">
+                        <content>
+                            <FlowPane fx:id="enterByTextEntriesPane" prefHeight="200.0" prefWidth="200.0">
+                                <VBox fx:id="contentVbox" minHeight="-Infinity" prefHeight="250.0" prefWidth="980" spacing="10">
+                                    <children>
+                                        <TextArea fx:id="input" minHeight="-Infinity" prefHeight="200" prefWidth="400.0" wrapText="true"/>
+                                    </children>
+                                    <Button fx:id="plainTextparseButton" text="%Add to current library"/>
+                                </VBox>
+                            </FlowPane>
+                        </content>
+                    </TitledPane>
+
+                    <TitledPane fx:id="enterByBibTeXEntriesTitlePane" animated="false" collapsible="false" text="%New entry from BibTeX">
+                        <content>
+                            <FlowPane fx:id="enterByBibTeXEntriesPane" prefHeight="200.0" prefWidth="200.0">
+                                <VBox fx:id="BibTeXVbox" minHeight="-Infinity" prefHeight="250.0" prefWidth="980" spacing="10">
+                                    <children>
+                                        <TextArea fx:id="bibTeXinput" minHeight="-Infinity" prefHeight="200" prefWidth="400.0" wrapText="true"/>
+                                    </children>
+                                    <Button fx:id="bibTeXParseButton" text="%Add to current library"/>
+                                </VBox>
+                            </FlowPane>
+                        </content>
+                    </TitledPane>
+
+
+                </children>
+            </VBox>
+        </ScrollPane>
     </content>
 </DialogPane>
